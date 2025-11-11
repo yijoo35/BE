@@ -1,3 +1,4 @@
 spring:
-  application:
-    name: seniorjob
+  profiles:
+    active: dev
+    include: secret
