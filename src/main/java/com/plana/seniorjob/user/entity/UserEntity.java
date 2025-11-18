@@ -18,6 +18,4 @@ public class UserEntity {
     private String gender;
     private String birthyear;
 
-    @Enumerated(EnumType.STRING)
-    private MemberType memberType;
 }

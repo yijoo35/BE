@@ -15,11 +15,7 @@ public class AuthService {
     private final KakaoOAuthService kakaoOAuthService;
     private final UserRepository userRepository;
 
-    public UserEntity login(String code, MemberType memberType) {
-
-        if (memberType != MemberType.NORMAL) {
-            throw new IllegalArgumentException("카카오 로그인은 일반 회원만 가능합니다.");
-        }
+    public UserEntity login(String code) {
 
         KakaoUserInfo info = kakaoOAuthService.getUserInfoFromCode(code);
 
@@ -35,7 +31,6 @@ public class AuthService {
                 .email(info.getEmail())
                 .gender(info.getGender())
                 .birthyear(info.getBirthyear())
-                .memberType(MemberType.NORMAL)
                 .build();
 
         return userRepository.save(user);
