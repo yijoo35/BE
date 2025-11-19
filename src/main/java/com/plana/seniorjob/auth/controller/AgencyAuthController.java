@@ -1,9 +1,6 @@
 package com.plana.seniorjob.auth.controller;
 
-import com.plana.seniorjob.user.dto.AgencyLoginRequest;
-import com.plana.seniorjob.user.dto.AgencyLoginResponse;
-import com.plana.seniorjob.user.dto.AgencySignupRequest;
-import com.plana.seniorjob.user.dto.AgencySignupResponse;
+import com.plana.seniorjob.user.dto.*;
 import com.plana.seniorjob.user.service.AgencySignupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

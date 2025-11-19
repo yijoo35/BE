@@ -11,5 +11,4 @@ public class AgencyLoginResponse {
     private Long userId;
     private String username;
     private String accessToken;
-    private String refreshToken;
 }

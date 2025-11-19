@@ -1,12 +1,11 @@
 package com.plana.seniorjob.user.service;
 
+import com.plana.seniorjob.agency.repository.AgencyRepository;
 import com.plana.seniorjob.global.jwt.JwtTokenProvider;
 import com.plana.seniorjob.global.validation.AgencySignupValidator;
-import com.plana.seniorjob.user.dto.AgencyLoginRequest;
-import com.plana.seniorjob.user.dto.AgencyLoginResponse;
-import com.plana.seniorjob.user.dto.AgencySignupRequest;
-import com.plana.seniorjob.user.dto.AgencySignupResponse;
+import com.plana.seniorjob.user.dto.*;
 import com.plana.seniorjob.user.entity.UserAgency;
+import com.plana.seniorjob.user.enums.MemberType;
 import com.plana.seniorjob.user.repository.UserAgencyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +19,7 @@ public class AgencySignupService {
     private final AgencySignupValidator validator;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AgencyRepository agencyRepository;
 
     public AgencySignupResponse signup(AgencySignupRequest req) {
 
@@ -34,6 +34,7 @@ public class AgencySignupService {
         UserAgency user = new UserAgency();
         user.setUsername(req.getUsername());
         user.setPassword(encodedPw);
+        user.setMemberType(MemberType.AGENCY);
 
         userAgencyRepo.save(user);
 
@@ -54,14 +55,12 @@ public class AgencySignupService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getUsername());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId(), user.getUsername());
+        String token = jwtTokenProvider.createToken(user.getUsername());
 
         return new AgencyLoginResponse(
                 user.getId(),
                 user.getUsername(),
-                accessToken,
-                refreshToken
+                token
         );
     }
 }

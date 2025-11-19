@@ -1,5 +1,6 @@
 package com.plana.seniorjob.global.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,29 +14,39 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // 1시간
-    private final long validityInMs = 60 * 60 * 1000L;
-    private final long refreshTokenValidity = 14 * 24 * 60 * 60 * 1000L;
+    private final long accessTokenExpiration = 1000L * 60 * 60 * 6;
 
-    public String createAccessToken(Long userId, String username) {
-        return createToken(userId, username, validityInMs);
-    }
-
-    public String createRefreshToken(Long userId, String username) {
-        return createToken(userId, username, refreshTokenValidity);
-    }
-
-    private String createToken(Long userId, String username, long validity) {
+    // JWT 생성
+    public String createToken(String username) {
+        Claims claims = Jwts.claims().setSubject(username); // username 저장
 
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + validity);
+        Date expiry = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))
-                .claim("username", username)
+                .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
+    }
+
+    // JWT에서 사용자명 꺼내기
+    public String getUsername(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    // JWT 유효성 검증
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

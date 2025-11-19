@@ -1,5 +1,6 @@
 package com.plana.seniorjob.auth.controller;
 
+import com.plana.seniorjob.auth.dto.KakaoLoginResponse;
 import com.plana.seniorjob.auth.service.AuthService;
 import com.plana.seniorjob.auth.service.KakaoOAuthService;
 import com.plana.seniorjob.user.entity.UserEntity;
@@ -25,12 +26,11 @@ public class KakaoAuthController {
     @Operation(summary = "카카오 로그인 콜백", description = "카카오 인가 코드를 받아 액세스 토큰을 발급, 사용자 정보를 반환")
     @ApiResponse(responseCode = "200", description = "로그인 성공 (카카오 사용자 정보 반환)")
     @GetMapping("/login/oauth2/code/kakao")
-    public ResponseEntity<?> kakaoCallback(@RequestParam String code) {
+    public ResponseEntity<KakaoLoginResponse> kakaoCallback(@RequestParam String code) {
+        log.info("카카오 인가 코드: {}", code);
 
-        log.info("인가코드: {}", code);
+        KakaoLoginResponse response = authService.login(code);
 
-        UserEntity user = authService.login(code);
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(response);
     }
 }
