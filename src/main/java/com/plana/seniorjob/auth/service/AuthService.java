@@ -1,38 +1,61 @@
 package com.plana.seniorjob.auth.service;
 
+import com.plana.seniorjob.auth.dto.KakaoLoginResponse;
 import com.plana.seniorjob.auth.dto.KakaoUserInfo;
-import com.plana.seniorjob.user.enums.MemberType;
+import com.plana.seniorjob.auth.service.KakaoOAuthService;
+import com.plana.seniorjob.global.jwt.JwtTokenProvider;
 import com.plana.seniorjob.user.entity.UserEntity;
 import com.plana.seniorjob.user.enums.MemberType;
-import com.plana.seniorjob.user.repository.UserRepository;
+import com.plana.seniorjob.user.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final KakaoOAuthService kakaoOAuthService;
-    private final UserRepository userRepository;
+    private final UserEntityRepository userRepo;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserEntity login(String code) {
+    @Transactional
+    public KakaoLoginResponse login(String code) {
 
-        KakaoUserInfo info = kakaoOAuthService.getUserInfoFromCode(code);
+        // 카카오 AccessToken 발급
+        String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
 
-        return userRepository.findByKakaoId(info.getKakaoId())
-                .orElseGet(() -> createUser(info));
-    }
+        // 사용자 정보 조회
+        KakaoUserInfo kakaoInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);
 
-    private UserEntity createUser(KakaoUserInfo info) {
+        // DB에서 카카오 사용자 조회
+        UserEntity user = userRepo.findByKakaoId(kakaoInfo.getKakaoId()).orElse(null);
 
-        UserEntity user = UserEntity.builder()
-                .kakaoId(info.getKakaoId())
-                .name(info.getName())
-                .email(info.getEmail())
-                .gender(info.getGender())
-                .birthyear(info.getBirthyear())
-                .build();
+        boolean isNewUser = false;
 
-        return userRepository.save(user);
+        // 신규 유저 → 가입
+        if (user == null) {
+            user = UserEntity.builder()
+                    .kakaoId(kakaoInfo.getKakaoId())
+                    .name(kakaoInfo.getName())
+                    .email(kakaoInfo.getEmail())
+                    .gender(kakaoInfo.getGender())
+                    .birthyear(kakaoInfo.getBirthyear())
+                    .memberType(MemberType.NORMAL)
+                    .build();
+
+            userRepo.save(user);
+            isNewUser = true;
+        }
+
+        String serverJwtToken = jwtTokenProvider.createToken(user.getKakaoId());
+
+        return new KakaoLoginResponse(
+                user.getId(),
+                user.getKakaoId(),
+                user.getName(),
+                serverJwtToken,
+                isNewUser
+        );
     }
 }
