@@ -4,9 +4,10 @@ spring:
 
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:seniorjobdb;
+    url: jdbc:h2:~/planA-db;
     username: sa
     password:
+#    sql-script-encoding: UTF-8
 
   jpa:
     hibernate:
@@ -15,9 +16,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
 
   h2:
     console:
+      settings:
+        web-allow-others: true
       enabled: true
       path: /h2-console
 
@@ -27,10 +31,31 @@ spring:
       enabled: true
       force: true
 
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+        registration:
+          kakao:
+            client-id: ${kakao.client-id}
+            client-secret: ${kakao.client-secret}
+            redirect-uri: http://localhost:3000/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            client-name: kakao
+            scope:
+              - name
+              - gender
+              - birthyear
+              - account_email
+
 server:
   port: 8080
-  servlet:
-    context-path: /api
 
 logging:
   level:

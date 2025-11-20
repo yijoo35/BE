@@ -1,13 +1,13 @@
-package com.plana.seniorjob.global.swagger.config;
+package com.plana.seniorjob.global.config.swagger;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.security.SecuritySchemes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springdoc.core.models.GroupedOpenApi;
-import org.springframework.context.annotation.Bean;
-
-import java.util.List;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -16,6 +16,14 @@ import java.util.List;
                 version = "V1"
         )
 )
+@SecuritySchemes({
+        @SecurityScheme(
+                name = "bearerAuth",
+                type = SecuritySchemeType.HTTP,
+                scheme = "bearer",
+                bearerFormat = "JWT"
+        )
+})
 @Configuration
 public class SwaggerConfig {
 
@@ -23,7 +31,7 @@ public class SwaggerConfig {
     public GroupedOpenApi apiGroup() {
         return GroupedOpenApi.builder()
                 .group("api")
-                .pathsToMatch("/api/**")
+                .pathsToMatch("/**")
                 .build();
     }
 
