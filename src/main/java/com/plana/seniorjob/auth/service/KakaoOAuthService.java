@@ -21,7 +21,7 @@ public class KakaoOAuthService {
     @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
 
-    @Value("${kakao.oauth.redirect-uri}")
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
 
     private final RestTemplate restTemplate;
