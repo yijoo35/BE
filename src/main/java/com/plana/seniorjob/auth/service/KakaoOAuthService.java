@@ -15,13 +15,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KakaoOAuthService {
 
-    @Value("${kakao.client-id}")
+    @Value("${kakao.oauth.client-id}")
     private String clientId;
 
-    @Value("${kakao.client-secret}")
+    @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
 
-    @Value("${kakao.redirect-uri:http://localhost:3000/login/oauth2/code/kakao}")
+    @Value("${kakao.redirect-uri:http://localhost:3000/kakao/callback}")
     private String redirectUri;
 
     private final RestTemplate restTemplate;

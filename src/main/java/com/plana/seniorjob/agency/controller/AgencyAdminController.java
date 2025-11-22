@@ -20,4 +20,10 @@ public class AgencyAdminController {
         agencyFetchService.fetchAndSaveAllAgencies();
         return "OK";
     }
+
+    @PostMapping("/update-coordinates")
+    public String updateCoordinates() {
+        agencyFetchService.updateCoordinatesManually();
+        return "좌표 업데이트 완료!";
+    }
 }
