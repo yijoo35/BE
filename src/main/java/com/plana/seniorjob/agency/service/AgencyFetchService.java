@@ -23,18 +23,10 @@ public class AgencyFetchService {
     private final RestTemplate restTemplate;          // 기본 RestTemplate 사용!
     private final XmlMapper xmlMapper = new XmlMapper();
 
+    private final KakaoGeocodingService kakaoGeocodingService;
+
     @Value("${public-api.key}")
     private String serviceKey;
-
-    @PostConstruct
-    public void init() {
-        if (agencyRepository.count() == 0) {
-            System.out.println("Agency 데이터 없음");
-            fetchAndSaveAllAgencies();
-        } else {
-            System.out.println(" Agency 데이터 이미 존재 ");
-        }
-    }
 
     public void fetchAndSaveAllAgencies() {
         int page = 1;
@@ -81,23 +73,90 @@ public class AgencyFetchService {
     private void save(List<AgencyApiResponseDTO.AgencyItem> items) {
         for (AgencyApiResponseDTO.AgencyItem i : items) {
 
-            String tel = (i.getTelNum() != null && i.getTelNum().contains("*"))
-                    ? null : i.getTelNum();
+            String searchAddress = normalizeAddress(i.getZipAddr());
+            System.out.println(" 좌표 요청 주소 = " + searchAddress);
 
-            String fax = (i.getFaxNum() != null && i.getFaxNum().contains("*"))
-                    ? null : i.getFaxNum();
+            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
 
-            Agency agency = new Agency();
+            Agency agency = agencyRepository.findByOrgCd(i.getOrgCd())
+                    .orElse(new Agency());
+
             agency.setOrgCd(i.getOrgCd());
             agency.setOrgName(i.getOrgName());
             agency.setOrgType(i.getOrgTypeNm());
             agency.setZipAddr(i.getZipAddr());
             agency.setDtlAddr(i.getDtlAddr());
             agency.setZipCode(i.getZipCode());
+
+            String tel = (i.getTelNum() != null && i.getTelNum().contains("*")) ? null : i.getTelNum();
+            String fax = (i.getFaxNum() != null && i.getFaxNum().contains("*")) ? null : i.getFaxNum();
             agency.setTel(tel);
             agency.setFax(fax);
 
+            if (coords != null) {
+                agency.setLat(coords[0]);
+                agency.setLng(coords[1]);
+            }
+
             agencyRepository.save(agency);
+        }
+    }
+
+    private void updateCoordinates(List<Agency> agencies) {
+
+        for (Agency agency : agencies) {
+
+            try {
+                Thread.sleep(1000);  // too many request 방지
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+
+            String searchAddress = normalizeAddress(agency.getZipAddr());
+            System.out.println("좌표 요청 주소 = " + searchAddress);
+
+            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
+
+            if (coords != null) {
+                agency.setLat(coords[0]);
+                agency.setLng(coords[1]);
+                agencyRepository.save(agency);
+            } else {
+                System.out.println("좌표 못찾음: " + searchAddress);
+            }
+        }
+    }
+
+    private String normalizeAddress(String addr) {
+        if (addr == null) return null;
+        return addr
+                .trim()                    // 앞뒤 공백 제거
+                .replaceAll("\\s+", " ");  // 중복 공백 하나로
+    }
+
+    public void updateCoordinatesManually() {
+        List<Agency> target = agencyRepository.findAllWithoutCoordinates();
+
+        for (Agency agency : target) {
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            String searchAddress = normalizeAddress(agency.getZipAddr());
+            System.out.println(" 좌표 요청 주소 = " + searchAddress);
+
+            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
+
+            if (coords != null) {
+                agency.setLat(coords[0]);
+                agency.setLng(coords[1]);
+                agencyRepository.save(agency);
+            } else {
+                System.out.println("좌표 못찾음 = " + searchAddress);
+            }
         }
     }
 }

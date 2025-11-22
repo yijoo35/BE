@@ -16,4 +16,7 @@ public interface AgencyRepository extends JpaRepository<Agency, Long> {
 
     @Query("SELECT a FROM Agency a WHERE a.orgName LIKE %:keyword%")
     List<Agency> searchByKeyword(@Param("keyword") String keyword);
+
+    @Query("SELECT a FROM Agency a WHERE a.lat IS NULL OR a.lng IS NULL")
+    List<Agency> findAllWithoutCoordinates();
 }
