@@ -21,7 +21,7 @@ public class KakaoOAuthService {
     @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
 
-    @Value("${kakao.redirect-uri:http://localhost:3000/kakao/callback}")
+    @Value("${kakao.oauth.redirect-uri}")
     private String redirectUri;
 
     private final RestTemplate restTemplate;
