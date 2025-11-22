@@ -4,14 +4,11 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.plana.seniorjob.agency.dto.AgencyApiResponseDTO;
 import com.plana.seniorjob.agency.entity.Agency;
 import com.plana.seniorjob.agency.repository.AgencyRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -20,9 +17,8 @@ import java.util.List;
 public class AgencyFetchService {
 
     private final AgencyRepository agencyRepository;
-    private final RestTemplate restTemplate;          // 기본 RestTemplate 사용!
+    private final RestTemplate restTemplate;
     private final XmlMapper xmlMapper = new XmlMapper();
-
     private final KakaoGeocodingService kakaoGeocodingService;
 
     @Value("${public-api.key}")
@@ -37,20 +33,17 @@ public class AgencyFetchService {
 
             byte[] bytes = restTemplate.getForObject(url, byte[].class);
             if (bytes == null) break;
+
             String xml = new String(bytes, StandardCharsets.UTF_8);
 
-            // XML → DTO 변환
             AgencyApiResponseDTO data = parse(xml);
-
             List<AgencyApiResponseDTO.AgencyItem> items = data.getBody().getItems().getItem();
 
-            if (items == null || items.isEmpty())
-                break;
+            if (items == null || items.isEmpty()) break;
 
             save(items);
 
             if (items.size() < rows) break;
-
             page++;
         }
     }
@@ -66,17 +59,12 @@ public class AgencyFetchService {
         try {
             return xmlMapper.readValue(xml, AgencyApiResponseDTO.class);
         } catch (Exception e) {
-            throw new RuntimeException("XML 파싱 실패 → 인코딩 확인 필요", e);
+            throw new RuntimeException("XML 파싱 실패", e);
         }
     }
 
     private void save(List<AgencyApiResponseDTO.AgencyItem> items) {
         for (AgencyApiResponseDTO.AgencyItem i : items) {
-
-            String searchAddress = normalizeAddress(i.getZipAddr());
-            System.out.println(" 좌표 요청 주소 = " + searchAddress);
-
-            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
 
             Agency agency = agencyRepository.findByOrgCd(i.getOrgCd())
                     .orElse(new Agency());
@@ -93,70 +81,51 @@ public class AgencyFetchService {
             agency.setTel(tel);
             agency.setFax(fax);
 
-            if (coords != null) {
-                agency.setLat(coords[0]);
-                agency.setLng(coords[1]);
-            }
-
             agencyRepository.save(agency);
         }
     }
 
-    private void updateCoordinates(List<Agency> agencies) {
 
-        for (Agency agency : agencies) {
+    public void updateCoordinatesManually() {
 
-            try {
-                Thread.sleep(1000);  // too many request 방지
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        List<Agency> targets =
+                agencyRepository.findAllWithoutCoordinates();
+
+        System.out.println("좌표 업데이트 대상: " + targets.size() + "개");
+
+        for (Agency agency : targets) {
+
+            String addr = normalizeAddress(agency.getZipAddr());
+            System.out.println("요청 주소 = " + addr);
+
+            double[] coords = kakaoGeocodingService.getLatLng(addr);
+
+            if (coords == null) {
+                sleep(800);
+                coords = kakaoGeocodingService.getLatLng(addr);
             }
-
-
-            String searchAddress = normalizeAddress(agency.getZipAddr());
-            System.out.println("좌표 요청 주소 = " + searchAddress);
-
-            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
 
             if (coords != null) {
                 agency.setLat(coords[0]);
                 agency.setLng(coords[1]);
                 agencyRepository.save(agency);
+                System.out.println("저장됨 = " + addr);
             } else {
-                System.out.println("좌표 못찾음: " + searchAddress);
+                System.out.println("좌표 변환 실패 = " + addr);
             }
+
+            sleep(400); // rate-limit 기본 딜레이
         }
+
+        System.out.println("좌표 업데이트 완료!");
     }
 
     private String normalizeAddress(String addr) {
         if (addr == null) return null;
-        return addr
-                .trim()                    // 앞뒤 공백 제거
-                .replaceAll("\\s+", " ");  // 중복 공백 하나로
+        return addr.trim().replaceAll("\\s+", " ");
     }
 
-    public void updateCoordinatesManually() {
-        List<Agency> target = agencyRepository.findAllWithoutCoordinates();
-
-        for (Agency agency : target) {
-            try {
-                Thread.sleep(150);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            String searchAddress = normalizeAddress(agency.getZipAddr());
-            System.out.println(" 좌표 요청 주소 = " + searchAddress);
-
-            double[] coords = kakaoGeocodingService.getLatLng(searchAddress);
-
-            if (coords != null) {
-                agency.setLat(coords[0]);
-                agency.setLng(coords[1]);
-                agencyRepository.save(agency);
-            } else {
-                System.out.println("좌표 못찾음 = " + searchAddress);
-            }
-        }
+    private void sleep(long ms) {
+        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
     }
 }
