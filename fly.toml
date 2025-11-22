@@ -17,7 +17,7 @@ primary_region = 'nrt'
   min_machines_running = 1
   processes = ['app']
 
-  [http_service.http_check]
+  [[http_service.checks]]
     interval = "15s"
     timeout = "10s"
     grace_period = "120s"
@@ -31,6 +31,5 @@ primary_region = 'nrt'
   cpus = 1
 
 [env]
-  # 환경변수 설정
   DATABASE_URL = "jdbc:postgresql://planadb.internal:5432/postgres"
   DB_USERNAME = "postgres"
