@@ -11,6 +11,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    //회원가입 시
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity
@@ -20,6 +21,19 @@ public class GlobalExceptionHandler {
                         "status", 400,
                         "error", "Bad Request",
                         "message", ex.getMessage()
+                ));
+    }
+
+    //로그인 실패
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentials() {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED) // 401
+                .body(Map.of(
+                        "timestamp", LocalDateTime.now(),
+                        "status", 401,
+                        "error", "Unauthorized",
+                        "message", "아이디 또는 비밀번호를 다시 확인하세요."
                 ));
     }
 

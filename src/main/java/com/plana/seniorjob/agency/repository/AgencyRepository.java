@@ -19,4 +19,21 @@ public interface AgencyRepository extends JpaRepository<Agency, Long> {
 
     @Query("SELECT a FROM Agency a WHERE a.lat IS NULL OR a.lng IS NULL")
     List<Agency> findAllWithoutCoordinates();
+
+    @Query("""
+SELECT a
+FROM Agency a
+WHERE a.lat IS NOT NULL AND a.lng IS NOT NULL
+AND (6371 * acos(
+            cos(radians(:lat))
+          * cos(radians(a.lat))
+          * cos(radians(a.lng) - radians(:lng))
+          + sin(radians(:lat)) * sin(radians(a.lat))
+    )) <= :distance
+""")
+    List<Agency> findAgenciesWithinDistance(
+            @Param("lat") double lat,
+            @Param("lng") double lng,
+            @Param("distance") double distance
+    );
 }
