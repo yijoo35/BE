@@ -8,6 +8,7 @@ import com.plana.seniorjob.user.entity.UserAgency;
 import com.plana.seniorjob.user.enums.MemberType;
 import com.plana.seniorjob.user.repository.UserAgencyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,10 +50,10 @@ public class AgencySignupService {
     public AgencyLoginResponse login(AgencyLoginRequest req) {
 
         UserAgency user = userAgencyRepo.findByUsername(req.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("아이디가 존재하지 않습니다."));
+                .orElseThrow(() -> new BadCredentialsException("invalid"));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new BadCredentialsException("invalid");
         }
 
         String token = jwtTokenProvider.createToken(user.getUsername());

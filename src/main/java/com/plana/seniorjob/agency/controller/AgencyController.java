@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "기관 검색/정보 수정", description = "로그인 후 기관명 검색 & 정보 수정 API")
+@Tag(name = "기관 검색", description = "로그인 후 기관명 검색 API")
 @RestController
 @RequestMapping("/api/agencies")
 @RequiredArgsConstructor

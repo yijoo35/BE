@@ -66,6 +66,12 @@ public class AgencyFetchService {
     private void save(List<AgencyApiResponseDTO.AgencyItem> items) {
         for (AgencyApiResponseDTO.AgencyItem i : items) {
 
+            if (i.getZipAddr() == null) continue;
+            String addr = i.getZipAddr();
+            if (!(addr.contains("서울") || addr.contains("서울특별시"))) {
+                continue;
+            }
+
             Agency agency = agencyRepository.findByOrgCd(i.getOrgCd())
                     .orElse(new Agency());
 
@@ -77,6 +83,21 @@ public class AgencyFetchService {
             agency.setZipCode(i.getZipCode());
 
             String tel = (i.getTelNum() != null && i.getTelNum().contains("*")) ? null : i.getTelNum();
+            if (tel == null) {
+
+                // 서울인지 체크
+                boolean isSeoul = i.getZipAddr().contains("서울") || i.getZipAddr().contains("서울특별시");
+
+                if (isSeoul) {
+                    // 전화번호 추가
+                    String kakaoPhone = kakaoGeocodingService.findPhoneByKeyword(i.getOrgName());
+                    if (kakaoPhone != null && !kakaoPhone.isBlank()) {
+                        tel = kakaoPhone;
+                        System.out.println("전화번호 업데이트: " + i.getOrgName() + " → " + tel);
+                    }
+                }
+            }
+
             String fax = (i.getFaxNum() != null && i.getFaxNum().contains("*")) ? null : i.getFaxNum();
             agency.setTel(tel);
             agency.setFax(fax);
@@ -84,7 +105,6 @@ public class AgencyFetchService {
             agencyRepository.save(agency);
         }
     }
-
 
     public void updateCoordinatesManually() {
 
@@ -96,7 +116,10 @@ public class AgencyFetchService {
         for (Agency agency : targets) {
 
             String addr = normalizeAddress(agency.getZipAddr());
-            System.out.println("요청 주소 = " + addr);
+            if (addr == null || !(addr.contains("서울") || addr.contains("서울특별시"))) {
+                //System.out.println("서울 아님 → 스킵: " + addr);
+                continue;
+            }
 
             double[] coords = kakaoGeocodingService.getLatLng(addr);
 
@@ -117,7 +140,7 @@ public class AgencyFetchService {
             sleep(400); // rate-limit 기본 딜레이
         }
 
-        System.out.println("좌표 업데이트 완료!");
+        System.out.println("좌표 업데이트 완료");
     }
 
     private String normalizeAddress(String addr) {
