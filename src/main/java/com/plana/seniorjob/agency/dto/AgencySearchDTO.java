@@ -15,4 +15,7 @@ public class AgencySearchDTO {
     private String zipAddr;   // 도로명 주소
     private String dtlAddr;   // 상세 주소
     private String tel;       // 전화번호
+
+    private double lat; //위도
+    private double lng; // 경도
 }

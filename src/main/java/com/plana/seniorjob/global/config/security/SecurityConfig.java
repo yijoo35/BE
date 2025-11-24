@@ -36,9 +36,9 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
-                .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입 허용
-                .requestMatchers("/test/**").permitAll() // 테스트용 url 허용 (필요하다면)
-                .requestMatchers("/api/user/agency/**", "/api/agencies/**").authenticated()
+                .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입
+                .requestMatchers("/api/agencies/**").permitAll() // 기관 검색/상세
+                .requestMatchers("/api/user/agency/**").permitAll() // 기관 선택
                 .anyRequest().permitAll()
         );
 
@@ -47,7 +47,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // CORS 설정을 여기로 옮겼습니다.
+    // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
