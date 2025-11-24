@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "기관 검색", description = "로그인 후 기관명 검색 API")
+@Tag(name = "기관 검색", description = "기관명 검색 API")
 @RestController
 @RequestMapping("/api/agencies")
 @RequiredArgsConstructor
@@ -22,8 +22,7 @@ public class AgencyController {
     private final AgencyRepository agencyRepository;
 
     @Operation(
-            summary = "기관명 검색", description = "두 글자 이상 검색, 리스트가 반환됨",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            summary = "기관명 검색", description = "두 글자 이상 검색, 리스트가 반환됨"
     )
     @GetMapping("/search")
     public List<AgencySearchDTO> searchAgency(@RequestParam String keyword) {
@@ -39,12 +38,14 @@ public class AgencyController {
                         a.getOrgName(),
                         a.getZipAddr(),
                         a.getDtlAddr(),
-                        a.getTel()
+                        a.getTel(),
+                        a.getLat(),
+                        a.getLng()
                 ))
                 .toList();
     }
 
-    @Operation(summary = "기관 선택 후 상세 정보", security = { @SecurityRequirement(name = "bearerAuth") })
+    @Operation(summary = "기관 선택 후 상세 정보")
     @GetMapping("/{orgCd}")
     public AgencyDetailDTO getAgencyDetail(@PathVariable String orgCd) {
 

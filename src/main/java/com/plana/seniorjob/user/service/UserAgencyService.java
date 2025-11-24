@@ -22,10 +22,11 @@ public class UserAgencyService {
     @Transactional
     public UserAgencySelectResponse selectAgency(SelectAgencyRequest req) {
 
-        UserAgency user = getCurrentUser();
+        UserAgency user = userAgencyRepository.findById(req.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
         Agency agency = agencyRepository.findByOrgCd(req.getOrgCd())
-                .orElseThrow(() -> new RuntimeException("해당 기관을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 기관을 찾을 수 없습니다."));
 
         if (req.getTel() != null && !req.getTel().isBlank()) {
             agency.setTel(req.getTel());
@@ -35,9 +36,6 @@ public class UserAgencyService {
         }
         if (req.getDtlAddr() != null && !req.getDtlAddr().isBlank()) {
             agency.setDtlAddr(req.getDtlAddr());
-        }
-        if (req.getZipCode() != null && !req.getZipCode().isBlank()) {
-            agency.setZipCode(req.getZipCode());
         }
 
         agencyRepository.save(agency);
@@ -51,13 +49,5 @@ public class UserAgencyService {
                 agency.getOrgCd(),
                 agency.getOrgName()
         );
-    }
-
-    private UserAgency getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        return userAgencyRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("로그인된 기관유저 정보를 찾을 수 없습니다."));
     }
 }

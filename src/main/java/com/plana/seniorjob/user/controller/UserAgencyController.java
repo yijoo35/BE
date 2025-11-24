@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "기관 선택", description = "기관회원 로그인 후 자기 기관 선택 API")
+@Tag(name = "기관 선택", description = "기관회원 가입 자기 기관 선택 API")
 @RestController
 @RequestMapping("/api/user/agency")
 @RequiredArgsConstructor
@@ -23,8 +23,7 @@ public class UserAgencyController {
 
     @Operation(
             summary = "기관 선택/ 정보 수정",
-            description = "기관 검색 후 선택한 기관의 정보를 수정하고, 기관 회원과 기관 연결",
-            security = { @SecurityRequirement(name = "bearerAuth") }
+            description = "기관 검색 후 선택한 기관의 정보를 수정하고, 기관 회원과 기관 연결"
     )
     @PostMapping("/select")
     public ResponseEntity<UserAgencySelectResponse> selectAgency(
