@@ -27,7 +27,6 @@ public class KakaoAuthController {
     @ApiResponse(responseCode = "200", description = "로그인 성공 (카카오 사용자 정보 반환)")
     @GetMapping("/login/oauth2/code/kakao")
     public ResponseEntity<KakaoLoginResponse> kakaoCallback(@RequestParam String code) {
-        log.info("카카오 인가 코드: {}", code);
 
         KakaoLoginResponse response = authService.login(code);
 

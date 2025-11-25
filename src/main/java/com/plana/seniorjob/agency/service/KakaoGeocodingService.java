@@ -148,4 +148,37 @@ public class KakaoGeocodingService {
             Thread.sleep(ms);
         } catch (InterruptedException ignored) {}
     }
+
+    // 전화번호 정보 추가
+    public String findPhoneByKeyword(String keyword) {
+
+        try {
+            var uri = UriComponentsBuilder.fromHttpUrl(
+                            "https://dapi.kakao.com/v2/local/search/keyword.json")
+                    .queryParam("query", keyword)
+                    .queryParam("page", 1)
+                    .queryParam("size", 1)
+                    .build()
+                    .encode(StandardCharsets.UTF_8)
+                    .toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "KakaoAK " + kakaoRestApiKey);
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, entity, Map.class);
+
+            List<Map<String, Object>> docs =
+                    (List<Map<String, Object>>) response.getBody().get("documents");
+
+            if (docs == null || docs.isEmpty()) return null;
+
+            // phone 필드 가져오기
+            return (String) docs.get(0).get("phone");
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

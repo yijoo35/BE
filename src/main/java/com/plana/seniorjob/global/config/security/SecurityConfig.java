@@ -11,7 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -24,32 +29,44 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable());
-        http.cors(cors -> {});
+
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         http.authorizeHttpRequests(auth -> auth
-                // Swagger/H2-console 인증 필요 없음
-                .requestMatchers("/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/h2-console/**").permitAll()
-
-                // 로그인/회원가입 (기관/카카오) 인증 필요 없음
-                .requestMatchers("/auth/**").permitAll()
-
-                // 로그인 후 선택
-                .requestMatchers("/api/user/agency/**").authenticated()
-                .requestMatchers("/api/agencies/**").authenticated()
-
-                // 필요 시 조정
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
+                .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입
+                .requestMatchers("/api/agencies/**").permitAll() // 기관 검색/상세
+                .requestMatchers("/api/user/agency/**").permitAll() // 기관 선택
                 .anyRequest().permitAll()
         );
 
-        // JWT 필터 추가
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // CORS 설정
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://main.d1ux816d6al63b.amplifyapp.com",
+                "https://seniorjob.fly.dev"
+        ));
+
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+        configuration.setAllowedHeaders(List.of("*"));
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
@@ -61,6 +78,7 @@ public class SecurityConfig {
     public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
         FilterRegistrationBean<ForwardedHeaderFilter> filter = new FilterRegistrationBean<>();
         filter.setFilter(new ForwardedHeaderFilter());
+        filter.setOrder(0);
         return filter;
     }
 }

@@ -67,6 +67,7 @@ public class KakaoOAuthService {
                 (String) kakaoAccount.get("name"),
                 (String) kakaoAccount.get("email"),
                 (String) kakaoAccount.get("gender"),
+                (String) kakaoAccount.get("phone_number"),
                 (String) kakaoAccount.get("birthyear")
         );
     }
