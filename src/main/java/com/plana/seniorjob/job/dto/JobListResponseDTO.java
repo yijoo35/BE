@@ -1,6 +1,10 @@
 package com.plana.seniorjob.job.dto;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class JobListResponseDTO {
@@ -24,7 +28,9 @@ public class JobListResponseDTO {
 
     @Data
     public static class Items {
-        private java.util.List<JobListItem> item;
+        @JacksonXmlElementWrapper(useWrapping = false)
+        @JacksonXmlProperty(localName = "item")
+        private List<JobListItem> item;
     }
 
     @Data
