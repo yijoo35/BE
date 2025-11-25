@@ -15,12 +15,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/agencies/location")
 @RequiredArgsConstructor
-@Tag(name="기관 조회 API", description = "현재 위치 기반 2km이내 기관 조회 (로그인 필요)")
+@Tag(name="기관 조회 API", description = "현재 위치 기반 2km이내 기관 조회 (추후 로그인 필요)")
 public class AgencyLocationController {
 
     private final AgencyLocationService agencyLocationService;
 
-    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/nearby")
     public List<AgencyDistanceDTO> getNearbyAgencies(
             @RequestParam double lat,

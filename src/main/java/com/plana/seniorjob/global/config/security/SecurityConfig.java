@@ -53,7 +53,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
+                "http://localhost:5173",
                 "https://main.d1ux816d6al63b.amplifyapp.com",
                 "https://seniorjob.fly.dev"
         ));
