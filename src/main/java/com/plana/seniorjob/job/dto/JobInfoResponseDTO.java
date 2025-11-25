@@ -1,5 +1,8 @@
 package com.plana.seniorjob.job.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 @Data
@@ -16,15 +19,21 @@ public class JobInfoResponseDTO {
 
     @Data
     public static class Body {
+        private Integer numOfRows;
+        private Integer pageNo;
+        private Integer totalCount;
         private Items items;
     }
 
     @Data
     public static class Items {
+        @JacksonXmlElementWrapper(useWrapping = false)
+        @JacksonXmlProperty(localName = "item")
         private JobInfoItem item;
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class JobInfoItem {
 
         private String acptMthdCd;   // 접수방법 코드 (CM0801~CM0804)
@@ -44,8 +53,10 @@ public class JobInfoResponseDTO {
         private String repr;         // 대표자명
         private String stmId;        // 시스템 ID
         private String toAcptDd;     // 종료접수일
-        private String updDy;        // 변경일자
+        private String updDy;
+        private String updrId;        // 변경일자
         private String wantedAuthNo; // 구인 인증번호
         private String wantedTitle;  // 채용 제목
+        private String homepage; // 홈페이지
     }
 }
