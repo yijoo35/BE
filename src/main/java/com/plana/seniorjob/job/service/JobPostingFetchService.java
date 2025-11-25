@@ -27,12 +27,19 @@ public class JobPostingFetchService {
     @Value("${public-api.key}")
     private String serviceKey;
 
+    private static final int MAX_PAGE = 10;
+
     //@Transactional
     public void fetchJobPostings() {
         int page = 1;
         int rows = 100;
 
         while (true) {
+
+            if (page > MAX_PAGE) {
+                System.out.println("페이지 최대치 도달 → fetch 종료");
+                break;
+            }
 
             String url = buildListUrl(page, rows);
 
