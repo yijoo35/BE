@@ -16,6 +16,7 @@ public class UserEntity {
     private String name;
     private String email;
     private String gender;
+    private String phoneNumber;
     private String birthyear;
 
     @Enumerated(EnumType.STRING)

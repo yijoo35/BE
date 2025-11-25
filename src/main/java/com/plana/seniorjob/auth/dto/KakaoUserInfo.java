@@ -14,5 +14,6 @@ public class KakaoUserInfo {
     private String name;
     private String email;
     private String gender;
+    private String phoneNumber; // 추가
     private String birthyear;
 }

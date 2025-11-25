@@ -11,10 +11,12 @@ public interface AgencyRepository extends JpaRepository<Agency, Long> {
 
     Optional<Agency> findByOrgCd(String orgCd);
 
-    // 기관명 검색 (LIKE 검색)
-    List<Agency> findByOrgNameContaining(String keyword);
-
-    @Query("SELECT a FROM Agency a WHERE a.orgName LIKE %:keyword%")
+    @Query("""
+    SELECT a FROM Agency a
+    WHERE a.orgName LIKE %:keyword%
+       OR a.zipAddr LIKE %:keyword%
+       OR a.dtlAddr LIKE %:keyword%
+""")
     List<Agency> searchByKeyword(@Param("keyword") String keyword);
 
     @Query("SELECT a FROM Agency a WHERE a.lat IS NULL OR a.lng IS NULL")
@@ -36,4 +38,10 @@ AND (6371 * acos(
             @Param("lng") double lng,
             @Param("distance") double distance
     );
+
+    @Query("""
+    SELECT a FROM Agency a
+    WHERE a.orgName LIKE CONCAT(:keyword, '%')
+""")
+    List<Agency> autocomplete(@Param("keyword") String keyword);
 }

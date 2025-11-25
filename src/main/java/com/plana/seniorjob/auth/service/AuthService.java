@@ -40,6 +40,7 @@ public class AuthService {
                     .name(kakaoInfo.getName())
                     .email(kakaoInfo.getEmail())
                     .gender(kakaoInfo.getGender())
+                    .phoneNumber(kakaoInfo.getPhoneNumber())
                     .birthyear(kakaoInfo.getBirthyear())
                     .memberType(MemberType.NORMAL)
                     .build();
