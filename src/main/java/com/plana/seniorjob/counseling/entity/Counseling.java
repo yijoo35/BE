@@ -1,5 +1,6 @@
 package com.plana.seniorjob.counseling.entity;
 
+import com.plana.seniorjob.counseling.enums.CounselingStatus;
 import com.plana.seniorjob.agency.entity.Agency;
 import com.plana.seniorjob.user.entity.UserEntity;
 import com.plana.seniorjob.user.entity.UserResume;
@@ -31,6 +32,10 @@ public class Counseling {
     private UserEntity name;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "counselor_user_id")
+    private UserEntity counselor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "agency_id", nullable = false)
     private Agency agency;
 
@@ -58,10 +63,4 @@ public class Counseling {
 
     @OneToOne(mappedBy = "counseling", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserResume userResume;
-}
-
-enum CounselingStatus {
-    BEFORE_MATCHING,
-    IN_MATCHING,
-    MATCHED
 }

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_resume")
-@Getter @Setter
+@Getter
 @Builder @AllArgsConstructor @NoArgsConstructor
 public class UserResume {
 
@@ -20,7 +20,6 @@ public class UserResume {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "consult_id", nullable = false, unique = true)
     private Counseling counseling;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -64,5 +63,9 @@ public class UserResume {
     @PreUpdate // 업데이트 전
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateAge(Integer age){
+        this.age = age;
     }
 }
