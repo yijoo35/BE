@@ -52,7 +52,9 @@ spring:
               - name
               - gender
               - birthyear
+              - phone_number
               - account_email
+
 
 server:
   port: 8080
