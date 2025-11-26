@@ -3,12 +3,17 @@ package com.plana.seniorjob.user.entity;
 import com.plana.seniorjob.counseling.entity.Counseling;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user_resume")
 @Getter
+@Setter
+@Accessors(chain = true)
 @Builder @AllArgsConstructor @NoArgsConstructor
 public class UserResume {
 
@@ -35,8 +40,14 @@ public class UserResume {
     @Column(name = "qualification_text", columnDefinition = "TEXT")
     private String qualificationText; // 자격 사항
 
-    @Column(name = "career_text", columnDefinition = "TEXT")
-    private String careerText; // 경력 사항
+    @OneToMany(mappedBy = "userResume", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Career> careers = new ArrayList<>();
+
+    @Column(name = "total_career_years")
+    private Integer totalCareerYears = 0; // 총 경력 (년)
+
+    @Column(name = "total_career_months")
+    private Integer totalCareerMonths = 0; // 총 경력 (월)
 
     @Column(name = "interest_industry", length = 50)
     private String interestIndustry; // 관심 업종
@@ -57,15 +68,20 @@ public class UserResume {
     // --- 엔티티 생명 주기 관리 ---
     @PrePersist // 저장 전
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
+
     @PreUpdate // 업데이트 전
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateAge(Integer age){
-        this.age = age;
+    public void update(String residence, String qualificationText, String interestIndustry, String selfIntroText) {
+        this.residence = residence;
+        this.qualificationText = qualificationText;
+        this.interestIndustry = interestIndustry;
+        this.selfIntroText = selfIntroText;
     }
 }
