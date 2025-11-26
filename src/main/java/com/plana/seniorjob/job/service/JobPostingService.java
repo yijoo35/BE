@@ -10,6 +10,8 @@ import com.plana.seniorjob.job.repository.JobPostingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -23,8 +25,7 @@ public class JobPostingService {
     // 전체 목록
     public JobListItemResponseDTO getAllJobs() {
 
-        List<JobPosting> postings =
-                jobPostingRepository.findAllOrderByCreateDyDesc();
+        List<JobPosting> postings = jobPostingRepository.findJobs();
 
         List<JobListItemDTO> items = postings.stream()
                 .map(this::convertToDTO)
@@ -43,8 +44,7 @@ public class JobPostingService {
             return getAllJobs();
         }
 
-        List<JobPosting> postings =
-                jobPostingRepository.searchJobs(keyword);
+        List<JobPosting> postings = jobPostingRepository.searchJobs(keyword);
 
         List<JobListItemDTO> items = postings.stream()
                 .map(this::convertToDTO)
