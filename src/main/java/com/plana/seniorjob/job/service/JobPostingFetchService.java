@@ -27,7 +27,7 @@ public class JobPostingFetchService {
     @Value("${public-api.key}")
     private String serviceKey;
 
-    private static final int MAX_PAGE = 10;
+    private static final int MAX_PAGE = 3;
 
     //@Transactional
     public void fetchJobPostings() {
@@ -102,6 +102,9 @@ public class JobPostingFetchService {
             posting.setWorkPlc(item.getWorkPlc());
             posting.setWorkPlcNm(item.getWorkPlcNm());
             posting.setAcptMthd(item.getAcptMthd());
+
+            posting.setJobcls(item.getJobcls());
+            posting.setJobclsNm(item.getJobclsNm()); // 추가
 
             // 상세 데이터 매핑
             posting.setAcptMthdCd(d.getAcptMthdCd());
