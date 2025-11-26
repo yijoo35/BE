@@ -1,5 +1,6 @@
 package com.plana.seniorjob.user.service;
 
+import com.plana.seniorjob.agency.entity.Agency;
 import com.plana.seniorjob.agency.repository.AgencyRepository;
 import com.plana.seniorjob.global.jwt.JwtTokenProvider;
 import com.plana.seniorjob.global.validation.AgencySignupValidator;
@@ -30,18 +31,33 @@ public class AgencySignupService {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
 
-        String encodedPw = passwordEncoder.encode(req.getPassword());
+        Agency agency = agencyRepository.findByOrgCd(req.getOrgCd())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 기관 코드입니다."));
+
+        if (req.getTel() != null && !req.getTel().isBlank()) {
+            agency.setTel(req.getTel());
+        }
+        if (req.getZipAddr() != null && !req.getZipAddr().isBlank()) {
+            agency.setZipAddr(req.getZipAddr());
+        }
+        if (req.getDtlAddr() != null && !req.getDtlAddr().isBlank()) {
+            agency.setDtlAddr(req.getDtlAddr());
+        }
+        agencyRepository.save(agency);
 
         UserAgency user = new UserAgency();
         user.setUsername(req.getUsername());
-        user.setPassword(encodedPw);
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setMemberType(MemberType.AGENCY);
+        user.setAgency(agency);
 
         userAgencyRepo.save(user);
 
         return new AgencySignupResponse(
                 user.getId(),
                 user.getUsername(),
+                agency.getOrgCd(),
+                agency.getOrgName(),
                 "회원가입이 완료되었습니다."
         );
     }

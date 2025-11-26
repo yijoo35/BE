@@ -15,5 +15,4 @@ public class AgencyDetailDTO {
     private String zipAddr;   // 도로명 주소
     private String dtlAddr;   // 상세 주소
     private String tel;       // 전화번호
-    private String orgType;   // 기관 유형
 }
