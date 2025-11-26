@@ -20,7 +20,7 @@ public class AgencyAuthController {
     private final AgencySignupService signupService;
 
     //회원가입
-    @Operation(summary = "회원가입 API")
+    @Operation(summary = "회원가입 API", description = "기관 정보 수정과 회원가입 한꺼번에 실행")
     @PostMapping("/signup")
     public ResponseEntity<AgencySignupResponse> signup(@RequestBody AgencySignupRequest req) {
         AgencySignupResponse response = signupService.signup(req);

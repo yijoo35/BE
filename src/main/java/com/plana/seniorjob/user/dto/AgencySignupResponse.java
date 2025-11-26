@@ -10,5 +10,9 @@ import lombok.*;
 public class AgencySignupResponse {
     private Long userId;
     private String username;
+
+    private String orgCd;       
+    private String orgName;
+
     private String message;
 }
