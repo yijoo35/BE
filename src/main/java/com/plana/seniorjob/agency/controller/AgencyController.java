@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,8 +103,7 @@ public class AgencyController {
                 agency.getOrgName(),
                 agency.getZipAddr(),
                 agency.getDtlAddr(),
-                agency.getTel(),
-                agency.getOrgType()
+                agency.getTel()
         );
     }
 
@@ -117,10 +117,9 @@ public class AgencyController {
             return ResponseEntity.ok(List.of());
         }
 
-        List<Agency> agencies = agencyRepository.autocomplete(keyword);
+        List<Agency> agencies = agencyRepository.autocomplete(keyword, PageRequest.of(0, 10));
 
         List<AgencyAutocompleteDTO> result = agencies.stream()
-                .limit(10) // 10개 제한
                 .map(a -> new AgencyAutocompleteDTO(
                         a.getOrgCd(),
                         a.getOrgName()

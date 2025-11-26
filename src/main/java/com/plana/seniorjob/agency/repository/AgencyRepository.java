@@ -1,6 +1,7 @@
 package com.plana.seniorjob.agency.repository;
 
 import com.plana.seniorjob.agency.entity.Agency;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -40,8 +41,9 @@ AND (6371 * acos(
     );
 
     @Query("""
-    SELECT a FROM Agency a
-    WHERE a.orgName LIKE CONCAT(:keyword, '%')
-""")
-    List<Agency> autocomplete(@Param("keyword") String keyword);
+        SELECT a FROM Agency a
+        WHERE LOWER(a.orgName) LIKE LOWER(CONCAT(:keyword, '%'))
+        ORDER BY a.orgName ASC
+    """)
+    List<Agency> autocomplete(@Param("keyword") String keyword, Pageable pageable);
 }
