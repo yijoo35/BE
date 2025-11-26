@@ -21,6 +21,8 @@ public class JobPosting {
 
     // 목록 + 상세 필드 통합
     private String recrtTitle;     // 제목
+    private String jobcls;         // 직종 코드
+    private String jobclsNm;       // 직종명
     private String emplymShp;      // 고용형태 코드
     private String emplymShpNm;    // 고용형태명
     private String frDd;           // 시작 접수일
