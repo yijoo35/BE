@@ -29,17 +29,27 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable());
-
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         http.authorizeHttpRequests(auth -> auth
+                // 개발할 때 모두 허용
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
                 .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입
                 .requestMatchers("/api/agencies/**").permitAll() // 기관 검색/상세
                 .requestMatchers("/api/user/agency/**").permitAll() // 기관 선택
                 .anyRequest().permitAll()
+
+//                // 로그인 연동 후
+//                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
+//                .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입
+//                // 인증 필요
+//                .requestMatchers("/api/agencies/**").authenticated() // 기관
+//                .requestMatchers("/api/jobs/**").authenticated() // 일자리 공고
+//                .requestMatchers("/api/resumes/**").authenticated() // 이력서 (기관회원만 -> ROLE_AGENCY)?
+//                .requestMatchers("/api/home/**").authenticated() // home -> 나중에 추가
+//                .requestMatchers("/api/mypage/**").authenticated() //mypage -> 나중에 추가
+//                .anyRequest().permitAll()
         );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -2,6 +2,7 @@ package com.plana.seniorjob.agency.controller;
 
 import com.plana.seniorjob.agency.dto.AgencyDistanceDTO;
 import com.plana.seniorjob.agency.service.AgencyLocationService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ public class AgencyLocationController {
 
     @GetMapping("/nearby")
     public List<AgencyDistanceDTO> getNearbyAgencies(
+            @Parameter(description = "위도")
             @RequestParam double lat,
+            @Parameter(description = "경도")
             @RequestParam double lng
     ) {
         return agencyLocationService.findNearby(lat, lng);
