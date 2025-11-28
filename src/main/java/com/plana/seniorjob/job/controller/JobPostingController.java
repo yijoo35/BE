@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name="일자리 공고 API", description = "공고 목록 및 상세 조회")
 @RestController
@@ -57,7 +54,7 @@ public class JobPostingController {
     @GetMapping("/detail")
     public JobDetailResponseDTO getDetailJob(
             @Parameter(description = "채용공고 ID")
-            @RequestParam String jobId
+            @PathVariable String jobId
     ){
         return jobPostingService.getJob(jobId);
     }
