@@ -51,7 +51,7 @@ public class JobPostingController {
     }
 
     @Operation(summary = "일자리 공고 상세 조회 API")
-    @GetMapping("/detail")
+    @GetMapping("/{jobId}")
     public JobDetailResponseDTO getDetailJob(
             @Parameter(description = "채용공고 ID")
             @PathVariable String jobId
