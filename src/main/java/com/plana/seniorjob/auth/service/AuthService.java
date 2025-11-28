@@ -20,10 +20,10 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public KakaoLoginResponse login(String code) {
+    public KakaoLoginResponse login(String code, String redirectUri) {
 
         // 카카오 AccessToken 발급
-        String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
+        String kakaoAccessToken = kakaoOAuthService.getAccessToken(code, redirectUri);
 
         // 사용자 정보 조회
         KakaoUserInfo kakaoInfo = kakaoOAuthService.getUserInfo(kakaoAccessToken);

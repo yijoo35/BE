@@ -21,12 +21,12 @@ public class KakaoOAuthService {
     @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String redirectUri;
+//    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+//    private String redirectUri;
 
     private final RestTemplate restTemplate;
 
-    public String getAccessToken(String code) {
+    public String getAccessToken(String code, String redirectUri) {
 
         String url = "https://kauth.kakao.com/oauth/token";
 
@@ -72,8 +72,8 @@ public class KakaoOAuthService {
         );
     }
 
-    public KakaoUserInfo getUserInfoFromCode(String code) {
-        String token = getAccessToken(code);
+    public KakaoUserInfo getUserInfoFromCode(String code, String redirectUri) {
+        String token = getAccessToken(code, redirectUri);
         return getUserInfo(token);
     }
 }

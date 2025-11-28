@@ -26,9 +26,12 @@ public class KakaoAuthController {
     @Operation(summary = "카카오 로그인 콜백", description = "카카오 인가 코드를 받아 액세스 토큰을 발급, 사용자 정보를 반환")
     @ApiResponse(responseCode = "200", description = "로그인 성공 (카카오 사용자 정보 반환)")
     @GetMapping("/login/oauth2/code/kakao")
-    public ResponseEntity<KakaoLoginResponse> kakaoCallback(@RequestParam String code) {
+    public ResponseEntity<KakaoLoginResponse> kakaoCallback(
+            @RequestParam String code,
+            @RequestParam String redirectUri
+    ) {
 
-        KakaoLoginResponse response = authService.login(code);
+        KakaoLoginResponse response = authService.login(code, redirectUri);
 
         return ResponseEntity.ok(response);
     }
