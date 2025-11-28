@@ -25,7 +25,7 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
         CASE WHEN j.deadline = '마감' THEN 1 ELSE 0 END ASC,
         j.toDd ASC,
         j.createDy DESC
-""")
+""") //제목, 주소, 직종, 기업이름
     List<JobPosting> searchJobs(@Param("keyword") String keyword);
 
     @Query("""
