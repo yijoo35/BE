@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name="이력서", description="사용자 이력서 정보조회 및 관리")
 @RestController
 @RequestMapping("/api/resumes")
 @RequiredArgsConstructor

@@ -1,66 +1,56 @@
 package com.plana.seniorjob.counseling.entity;
 
 import com.plana.seniorjob.counseling.enums.CounselingStatus;
-import com.plana.seniorjob.agency.entity.Agency;
 import com.plana.seniorjob.user.entity.UserEntity;
-import com.plana.seniorjob.user.entity.UserResume;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.LocalDate;
+import lombok.*;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Entity
 @Table(name = "counseling")
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Counseling {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "counseling_id")
-    private Long counselingId;
+    @Column(name = "consult_id")
+    private Long consultId;
 
-
-    // 내담자 (User) FK: user_id
+    // 클라이언트 (상담 신청자)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity name;
+    @JoinColumn(name = "client_id", nullable = false)
+    private UserEntity client;
 
+    // 상담사
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "counselor_user_id")
+    @JoinColumn(name = "counselor_id", nullable = true)
     private UserEntity counselor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agency_id", nullable = false)
-    private Agency agency;
-
-
-    @Column(name = "counseling_date", nullable = false)
-    private LocalDate counselingDate;
-
-    @Column(name = "counseling_time", nullable = false)
-    private LocalTime counselingTime;
-
+    // 상담 진행 상태
     @Enumerated(EnumType.STRING)
-    @Column(name = "counseling_status", nullable = false)
-    private CounselingStatus counselingStatus;
+    @Column(name = "status", nullable = false)
+    private CounselingStatus status;
 
+    // 상담 신청 시간
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
+    // 최종 업데이트 시간
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist // 저장 전
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.counselingStatus == null) {
-            this.counselingStatus = CounselingStatus.IN_MATCHING;
-        }
+        this.updatedAt = LocalDateTime.now();
     }
 
-    @OneToOne(mappedBy = "counseling", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserResume userResume;
+    @PreUpdate // 업데이트 전
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

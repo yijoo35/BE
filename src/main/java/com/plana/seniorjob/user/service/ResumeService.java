@@ -1,18 +1,18 @@
 package com.plana.seniorjob.user.service;
 
 import com.plana.seniorjob.counseling.entity.Counseling;
-import com.plana.seniorjob.counseling.enums.CounselingStatus;
+import com.plana.seniorjob.counseling.enums.CounselingStatus; // CounselingStatus는 Enum이므로 import 경로 확인
 import com.plana.seniorjob.user.entity.Career;
 import com.plana.seniorjob.user.entity.UserEntity;
 import com.plana.seniorjob.user.entity.UserResume;
 import com.plana.seniorjob.user.repository.UserResumeRepository;
 import com.plana.seniorjob.counseling.repository.CounselingRepository;
-import com.plana.seniorjob.user.repository.UserEntityRepository;
+import com.plana.seniorjob.user.repository.UserEntityRepository; // UserEntity를 찾기 위해 추가
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional; // 트랜잭션 어노테이션 추가
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -30,60 +30,17 @@ public class ResumeService {
     // 1. initializeResume 메서드
     @Transactional
     public UserResume initializeResume(UserEntity user, Counseling counseling){
-        String birthYearString = user.getBirthyear();
-        String genderString = user.getGender();
-
-        Integer calculatedAge = userService.calculateKoreanAge(birthYearString);
-
+        // 이력서 생성
         UserResume userResume = UserResume.builder()
                 .client(user)
                 .counseling(counseling)
-                .gender(genderString)
-                .age(calculatedAge)
-
-                .residence("")
-                .qualificationText("")
-                .interestIndustry("")
-                .selfIntroText("")
-                .embeddingVector(null)
+                .age(user.getBirthyear() != null ? (LocalDate.now().getYear() - Integer.parseInt(user.getBirthyear()) + 1) : null)
+                .gender(user.getGender())
                 .build();
-
         return userResumeRepository.save(userResume);
     }
 
-    // 2. getResumeForCounseling 메서드
-    @Transactional(readOnly = true)
-    public UserResume getResumeForCounseling(Long counselingId, Long currentUserId){
-
-        // 1. 상담 엔티티 조회
-        Counseling counseling = counselingRepository.findById(counselingId)
-                .orElseThrow(() -> new EntityNotFoundException("상담 내역을 찾을 수 없습니다. ID: " +counselingId));
-
-        // 2. 상태 검증
-        CounselingStatus status = counseling.getCounselingStatus();
-        if(status != CounselingStatus.IN_MATCHING && status != CounselingStatus.MATCHED){
-            throw new IllegalArgumentException("이력서 작성이 완료되지 않아 접근할 수 없습니다.");
-        }
-
-        // 3. 권한 검증 로직 삽입
-        Long clientId = counseling.getName().getId();
-        Long counselorId = (counseling.getCounselor() != null) ? counseling.getCounselor().getId() : null;
-
-        boolean isClient = currentUserId.equals(clientId);
-        boolean isAssignedCounselor = counselorId != null && currentUserId.equals(counselorId);
-
-        if (!isClient && !isAssignedCounselor) {
-            throw new AccessDeniedException("이력서 조회 권한이 없습니다.");
-        }
-
-        // 4. 이력서 조회 (JOIN FETCH 쿼리 사용으로 N+1 문제 방지 및 즉시 로딩)
-        UserResume resume = userResumeRepository.findByCounselingWithClientAndCareers(counseling)
-                .orElseThrow(() -> new EntityNotFoundException("해당 상담 ID에 연결된 이력서를 찾을 수 없습니다."));
-
-        return resume;
-    }
-
-    // 3. calculateTotalCareer 메서드 (총 경력 계산 로직)
+    // 2. 총 경력 계산 메서드
     @Transactional
     public void calculateTotalCareer(UserResume userResume) {
         List<Career> careers = userResume.getCareers();
@@ -107,19 +64,18 @@ public class ResumeService {
             if (Boolean.TRUE.equals(career.getIsCurrentlyWorking())) {
                 endDate = today;
             } else if (career.getEndYear() != null && career.getEndMonth() != null) {
-                // 종료일의 마지막 날짜를 계산하기 위해 다음달 1일에서 1일을 뺌
                 endDate = LocalDate.of(career.getEndYear(), career.getEndMonth(), 1).plusMonths(1).minusDays(1);
             } else {
-                continue; // 유효하지 않은 경력 기간 스킵
+                continue;
             }
 
-            // 시작일과 종료일이 유효한지 확인 (시작일이 종료일보다 늦으면 스킵)
+            // 시작일과 종료일이 유효한지 확인
             if (startDate.isAfter(endDate)) {
                 continue;
             }
 
-            // 기간 계산: ChronoUnit.MONTHS.between은 종료일 포함이 아니므로 + 1
-            long monthsInCareer = ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1).plusMonths(1));
+            // 기간 계산
+            long monthsInCareer = ChronoUnit.MONTHS.between(startDate, endDate) + 1;
             totalMonths += monthsInCareer;
         }
 
@@ -129,5 +85,28 @@ public class ResumeService {
 
         userResume.setTotalCareerYears(years);
         userResume.setTotalCareerMonths(remainingMonths);
+        userResumeRepository.save(userResume);
+    }
+
+    // 3.상담 ID를 통해 이력서를 조회하고 권한을 검증하는 메서드
+    @Transactional(readOnly = true)
+    public UserResume getResumeForCounseling(Long counselingId, Long currentUserId) {
+        // 1. Counseling 엔티티 조회
+        Counseling counseling = counselingRepository.findById(counselingId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 상담 정보를 찾을 수 없습니다: " + counselingId));
+
+        // 2. UserResume 엔티티 조회
+        UserResume resume = userResumeRepository.findByCounselingWithClientAndCareers(counseling)
+                .orElseThrow(() -> new EntityNotFoundException("해당 상담 정보와 연결된 이력서를 찾을 수 없습니다."));
+
+        // 3. 권한 검증: 클라이언트 또는 담당 상담사만 접근 가능
+        Long clientUserId = resume.getClient().getId();
+        Long counselorUserId = counseling.getCounselor() != null ? counseling.getCounselor().getId() : null;
+
+        if (!currentUserId.equals(clientUserId) && !currentUserId.equals(counselorUserId)) {
+            throw new AccessDeniedException("이력서 정보를 조회할 권한이 없습니다. (클라이언트 또는 담당 상담사만 가능)");
+        }
+
+        return resume;
     }
 }

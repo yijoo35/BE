@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name="이력서 경력 테이블", description = "사용자의 경력 정보(회사, 기간 등)")
 @RestController
 @RequestMapping("/api/resumes/{resumeId}/careers")
 @RequiredArgsConstructor

@@ -11,13 +11,17 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CareerService {
 
     private final CareerRepository careerRepository;
     private final UserResumeRepository userResumeRepository;
-    private final ResumeService resumeService;
+
 
     @Transactional
     public Career addCareer(Long resumeId, Long currentUserId, CareerRequest request) {
@@ -43,13 +47,14 @@ public class CareerService {
                 .employmentType(request.getEmploymentType())
                 .position(request.getPosition())
                 .jobDescription(request.getJobDescription())
+                .isCurrentlyWorking(request.getIsCurrentlyWorking() != null ? request.getIsCurrentlyWorking() : false)
                 .build();
 
         // 4. Career 저장
         Career savedCareer = careerRepository.save(newCareer);
 
-        // 5. 총 경력 업데이트
-        resumeService.calculateTotalCareer(userResume);
+        // 5. 총 경력 재계산 및 업데이트 (CareerService 내부에서 처리)
+        calculateTotalCareer(userResume);
 
         return savedCareer;
     }
@@ -72,7 +77,7 @@ public class CareerService {
         career.update(request);
 
         // 4. 총 경력 재계산 및 업데이트
-        resumeService.calculateTotalCareer(userResume);
+        calculateTotalCareer(userResume);
 
         return career;
     }
@@ -95,6 +100,55 @@ public class CareerService {
         careerRepository.delete(career);
 
         // 4. 총 경력 재계산 및 업데이트
-        resumeService.calculateTotalCareer(userResume);
+        calculateTotalCareer(userResume);
+    }
+
+    @Transactional
+    public void calculateTotalCareer(UserResume userResume) {
+        List<Career> careers = userResume.getCareers();
+
+        if (careers == null || careers.isEmpty()) {
+            // 경력이 없으면 0으로 초기화
+            userResume.setTotalCareerYears(0);
+            userResume.setTotalCareerMonths(0);
+            userResumeRepository.save(userResume);
+            return;
+        }
+
+        long totalMonths = 0;
+        LocalDate today = LocalDate.now();
+
+        for (Career career : careers) {
+            // 시작일 (필수)
+            LocalDate startDate = LocalDate.of(career.getStartYear(), career.getStartMonth(), 1);
+
+            LocalDate endDate;
+            if (Boolean.TRUE.equals(career.getIsCurrentlyWorking())) {
+                endDate = today;
+            } else if (career.getEndYear() != null && career.getEndMonth() != null) {
+                // 종료 월의 마지막 날로 설정 (기간 계산 시 해당 월 전체를 포함하도록)
+                endDate = LocalDate.of(career.getEndYear(), career.getEndMonth(), 1).plusMonths(1).minusDays(1);
+            } else {
+                continue; // 유효하지 않은 경력 기간
+            }
+
+            // 시작일과 종료일이 유효한지 확인
+            if (startDate.isAfter(endDate)) {
+                continue;
+            }
+
+            // 기간 계산
+            long monthsInCareer = ChronoUnit.MONTHS.between(startDate, endDate) + 1;
+            totalMonths += monthsInCareer;
+        }
+
+        // 년/월로 변환
+        int years = (int) (totalMonths / 12);
+        int remainingMonths = (int) (totalMonths % 12);
+
+        // UserResume 엔티티에 총 경력 업데이트
+        userResume.setTotalCareerYears(years);
+        userResume.setTotalCareerMonths(remainingMonths);
+        userResumeRepository.save(userResume);
     }
 }
